@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>π-এ বর্ণমালা/সংখ্যা অনুসন্ধান</title>
+    <style>
+        /* CSS Styling - আগের স্টাইলই ব্যবহার করা হয়েছে */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #5d50c6;
+            border-bottom: 2px solid #5d50c6;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 80px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .button-group button {
+            background-color: #5d50c6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 5px 15px 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-group button:hover {
+            background-color: #4b41a8;
+        }
+
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed #5d50c6;
+            border-radius: 6px;
+            background-color: #e6e4f8;
+            text-align: left;
+        }
+
+        .result-area p {
+            margin: 8px 0;
+            word-wrap: break-word; 
+        }
+
+        .pi-link a {
+            color: #d9534f;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔢 $\pi$-এ বর্ণ/সংখ্যা অনুসন্ধান</h1>
+    <p>অক্ষর, শব্দ বা সংখ্যা দিন। এটি সংখ্যায় রূপান্তর করে $\pi$-এর মধ্যে অনুসন্ধান করবে।</p>
+    
+    <textarea id="inputText" placeholder="যেমন: MATH IS FUN অথবা 3-1-4-1-5-9"></textarea>
+    
+    <div class="button-group">
+        <button onclick="searchInPi()">অনুসন্ধান শুরু করুন (Search $\pi$)</button>
+    </div>
+    
+    <div class="result-area">
+        <p>🔄 **রূপান্তরিত সংখ্যা:** <span id="encodedNumber"></span></p>
+        <p>📍 **প্রথম ১০০০ সংখ্যার অবস্থান:** <span id="piLocalResult"></span></p>
+        <p class="pi-link">🌐 **সম্পূর্ণ $\pi$ স্ট্রিং-এ অবস্থান:** <span id="piFullResult"></span></p>
+    </div>
+</div>
+
+<script>
+    // Pi-এর প্রথম 1000টি সংখ্যা (3. এর পরের অংশ)
+    const piDigits = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244594553469083026425223082533446850352619311881710100031378387528867531388623071575480248753140507628866835235308427670983196232455073147120512025358079844567406797802871344440669482930542469602524510004938637706786175782981";
+
+    function encodeToPiSequence(input) {
+        const text = input.trim().toUpperCase();
+        let encoded = [];
+
+        // যদি ইনপুটটি সংখ্যা হয় (যেমন 1-2-3-4 বা 31415)
+        if (/^[\d\s,-]+$/.test(text)) {
+             // সংখ্যাগুলিকে শুধুমাত্র এক স্ট্রিং-এ পরিণত করা হচ্ছে (যেমন: 3-1-4-15 -> 31415)
+             const numberArray = text.split(/[\s,-]+/).filter(n => n !== '');
+             return numberArray.join('');
+        }
+        
+        // যদি ইনপুটটি অক্ষর হয় (যেমন HELLO)
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (char >= 'A' && char <= 'Z') {
+                const numberValue = char.charCodeAt(0) - 64;
+                // প্রতিটি অক্ষরকে দুই অঙ্কের সংখ্যায় রূপান্তর করা হচ্ছে (01, 02, ..., 26) 
+                // শুধুমাত্র A1Z26 সিস্টেমে সহজে অনুসন্ধান করার জন্য
+                encoded.push(numberValue.toString().padStart(2, '0')); 
+            } else if (char === ' ') {
+                // স্পেসকে 00 দিয়ে এনকোড করা যেতে পারে (ঐচ্ছিক)
+                 encoded.push('00');
+            }
+        }
+        
+        // সব সংখ্যাকে একটি একক স্ট্রিং-এ যুক্ত করা
+        return encoded.join('');
+    }
+
+    function searchInPi() {
+        const input = document.getElementById('inputText').value;
+        const encodedNumber = document.getElementById('encodedNumber');
+        const piLocalResult = document.getElementById('piLocalResult');
+        const piFullResult = document.getElementById('piFullResult');
+
+        if (!input.trim()) {
+            encodedNumber.textContent = "অনুসন্ধানের জন্য কিছু লিখুন।";
+            piLocalResult.textContent = "";
+            piFullResult.textContent = "";
+            return;
+        }
+
+        // 1. ইনপুটকে সংখ্যায় রূপান্তর করা
+        let searchSequence = encodeToPiSequence(input);
+        
+        // যদি বর্ণমালা বা সংখ্যা কোনটিই না পাওয়া যায়
+        if (searchSequence === "") {
+            encodedNumber.textContent = "❌ শুধুমাত্র ইংরেজি অক্ষর বা সংখ্যা ইনপুট করুন।";
+            piLocalResult.textContent = "";
+            piFullResult.textContent = "";
+            return;
+        }
+
+        // রূপান্তরিত সংখ্যা ফলাফল হিসেবে দেখানো
+        encodedNumber.textContent = searchSequence;
+        
+        // 2. প্রথম 1000টি সংখ্যার মধ্যে অনুসন্ধান
+        const index = piDigits.indexOf(searchSequence);
+        
+        if (index !== -1) {
+            const position = index + 1; 
+            piLocalResult.innerHTML = `✅ **${piDigits.length}টি সংখ্যার মধ্যে পাওয়া গেছে!** এটি দশমিকের পরে **${position}তম স্থান** থেকে শুরু হয়েছে।`;
+        } else {
+            piLocalResult.innerHTML = `😔 দুঃখিত, এটি প্রথম ${piDigits.length}টি সংখ্যার মধ্যে **পাওয়া যায়নি**।`;
+        }
+
+        // 3. সম্পূর্ণ Pi স্ট্রিং-এ অনুসন্ধানের জন্য লিঙ্ক তৈরি
+        // এটি একটি অনলাইন Pi ডেটাবেস যা অনুসন্ধান করতে পারে
+        const piSearchURL = `https://pi-searcher.v-e-s.co.uk/?q=${searchSequence}`;
+        
+        piFullResult.innerHTML = `আপনার সংখ্যাটির **সম্পূর্ণ $\pi$ স্ট্রিং-এ অবস্থান** জানার জন্য এই টুলটি ব্যবহার করুন: <br><a href="${piSearchURL}" target="_blank">**${searchSequence}** অনুসন্ধান করুন (External Pi Searcher)</a>`;
+    }
+</script>
+
+</body>
+</html>
